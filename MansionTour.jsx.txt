@@ -1,0 +1,120 @@
+// components/MansionTour.jsx
+// 500vh tall section with a 100vh sticky inner container.
+// 5 rooms crossfade + subtle zoom based on scroll progress (GSAP ScrollTrigger scrub).
+const ROOMS = [
+  {
+    tag: 'Arrival',
+    title: <>The Grand<br />Entrance</>,
+    desc: 'Step through gates of a world apart. Where architecture commands silence and the air carries the weight of craftsmanship.',
+    img: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1800&q=80',
+  },
+  {
+    tag: 'Foyer',
+    title: <>A First<br />Impression</>,
+    desc: 'Soaring ceilings. Italian marble that whispers beneath your feet. The foyer announces what awaits beyond.',
+    img: 'https://images.unsplash.com/photo-1600607687939-ce8a6d9bb4e5?w=1800&q=80',
+  },
+  {
+    tag: 'Living',
+    title: <>The Main<br />Salon</>,
+    desc: 'Floor-to-ceiling glass frames city panoramas. Curated art. Custom furnishings. Living designed as performance.',
+    img: 'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=1800&q=80',
+  },
+  {
+    tag: 'Outdoors',
+    title: <>Infinity<br />Beyond</>,
+    desc: 'Where the pool meets the horizon and evenings dissolve into sky. Private terraces for moments that belong only to you.',
+    img: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1800&q=80',
+  },
+  {
+    tag: 'Collection',
+    title: <>The Private<br />Garage</>,
+    desc: 'A climate-controlled sanctuary for machines of pure desire. Your collection, enshrined in glass and steel.',
+    img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1800&q=80',
+  },
+];
+
+function MansionTour() {
+  const { useEffect, useRef, useState } = React;
+  const sectionRef = useRef(null);
+  const imgRefs = useRef([]);
+  const [activeRoom, setActiveRoom] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const trigger = ScrollTrigger.create({
+      trigger: sectionRef.current,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+      onUpdate: (self) => {
+        const prog = self.progress;
+        setProgress(prog);
+        const idx = Math.min(Math.floor(prog * ROOMS.length), ROOMS.length - 1);
+        setActiveRoom(idx);
+
+        // Per-room subtle zoom: scale from 1.08 -> 1 as we move through that room's segment
+        const segment = 1 / ROOMS.length;
+        const localProg = (prog % segment) / segment;
+        imgRefs.current.forEach((el, i) => {
+          if (!el) return;
+          if (i === idx) {
+            const scale = 1.08 - localProg * 0.08;
+            el.style.transform = `scale(${scale})`;
+          }
+        });
+      },
+    });
+
+    return () => trigger.kill();
+  }, []);
+
+  const goToRoom = (idx) => {
+    const section = sectionRef.current;
+    const sectionTop = section.offsetTop;
+    const totalHeight = section.offsetHeight - window.innerHeight;
+    const targetScroll = sectionTop + (idx / (ROOMS.length - 1)) * totalHeight;
+    window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+  };
+
+  return (
+    <section id="experience" ref={sectionRef} className="mansion-tour">
+      <div className="mansion-tour-sticky">
+        {ROOMS.map((room, i) => (
+          <div key={i} className={`tour-room ${i === activeRoom ? 'tour-room-active' : ''}`}>
+            <img
+              ref={el => imgRefs.current[i] = el}
+              className="tour-room-img"
+              src={room.img}
+              alt={room.tag}
+              loading="lazy"
+            />
+            <div className="tour-room-overlay" />
+            <div className="tour-room-content">
+              <div className="tour-room-tag">{room.tag}</div>
+              <h2 className="tour-room-title">{room.title}</h2>
+              <p className="tour-room-desc">{room.desc}</p>
+            </div>
+          </div>
+        ))}
+
+        <div className="tour-path-dots">
+          {ROOMS.map((_, i) => (
+            <div
+              key={i}
+              className={`tour-path-dot cursor-hover ${i === activeRoom ? 'tour-path-dot-active' : ''}`}
+              onClick={() => goToRoom(i)}
+            />
+          ))}
+          <span className="tour-path-label">Tour the Estate</span>
+        </div>
+
+        <div className="tour-progress-track">
+          <div className="tour-progress-fill" style={{ width: `${progress * 100}%` }} />
+        </div>
+      </div>
+    </section>
+  );
+}

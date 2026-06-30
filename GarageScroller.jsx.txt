@@ -1,0 +1,110 @@
+// components/GarageScroller.jsx
+const CARS = [
+  { brand: 'Ferrari', model: 'SF90 Stradale', hp: '1,000', accel: '2.5s', price: '€ 680k', img: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80' },
+  { brand: 'Lamborghini', model: 'Revuelto', hp: '1,015', accel: '2.5s', price: '€ 570k', img: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?w=800&q=80' },
+  { brand: 'Bugatti', model: 'Chiron', hp: '1,500', accel: '2.4s', price: '€ 3.2M', img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80' },
+  { brand: 'Rolls-Royce', model: 'Spectre', hp: '584', accel: '4.5s', price: '€ 315k', img: 'https://images.unsplash.com/photo-1629897048514-3dd7414fe72a?w=800&q=80' },
+  { brand: 'McLaren', model: 'P1 GTR', hp: '986', accel: '2.8s', price: '€ 2.1M', img: 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=800&q=80' },
+  { brand: 'Aston Martin', model: 'Valkyrie', hp: '1,160', accel: '2.5s', price: '€ 3.0M', img: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=800&q=80' },
+];
+
+function CarCard({ c }) {
+  return (
+    <div className="car-card cursor-hover">
+      <img className="car-img" src={c.img} alt={c.model} loading="lazy" />
+      <div className="car-overlay" />
+      <div className="car-info">
+        <div className="car-brand">{c.brand}</div>
+        <div className="car-model">{c.model}</div>
+        <div className="car-specs">
+          <div className="car-spec"><strong>{c.hp}</strong>HP</div>
+          <div className="car-spec"><strong>{c.accel}</strong>0-100</div>
+          <div className="car-spec"><strong>{c.price}</strong></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GarageScroller() {
+  const { useEffect, useRef } = React;
+  const containerRef = useRef(null);
+  const trackRef = useRef(null);
+  const dragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+
+    container.style.cursor = 'grab';
+
+    const onMouseDown = (e) => {
+      dragState.current.isDragging = true;
+      dragState.current.startX = e.pageX - container.offsetLeft;
+      dragState.current.scrollLeft = container.scrollLeft;
+      container.style.cursor = 'grabbing';
+    };
+    const onMouseMove = (e) => {
+      if (!dragState.current.isDragging) return;
+      const x = e.pageX - container.offsetLeft;
+      container.scrollLeft = dragState.current.scrollLeft - (x - dragState.current.startX);
+    };
+    const onMouseUp = () => { dragState.current.isDragging = false; container.style.cursor = 'grab'; };
+
+    let touchStartX = 0, touchScrollLeft = 0;
+    const onTouchStart = (e) => {
+      touchStartX = e.touches[0].pageX;
+      touchScrollLeft = container.scrollLeft;
+    };
+    const onTouchMove = (e) => {
+      const diff = touchStartX - e.touches[0].pageX;
+      container.scrollLeft = touchScrollLeft + diff;
+    };
+
+    container.addEventListener('mousedown', onMouseDown);
+    container.addEventListener('mousemove', onMouseMove);
+    container.addEventListener('mouseup', onMouseUp);
+    container.addEventListener('mouseleave', onMouseUp);
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: true });
+
+    // GSAP scroll-jacked horizontal movement tied to vertical scroll
+    gsap.registerPlugin(ScrollTrigger);
+    const st = gsap.to(track, {
+      x: () => -(track.scrollWidth - window.innerWidth - 96),
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#supercars',
+        start: 'top center',
+        end: 'bottom top',
+        scrub: 1.5,
+      },
+    });
+
+    return () => {
+      container.removeEventListener('mousedown', onMouseDown);
+      container.removeEventListener('mousemove', onMouseMove);
+      container.removeEventListener('mouseup', onMouseUp);
+      container.removeEventListener('mouseleave', onMouseUp);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      if (st.scrollTrigger) st.scrollTrigger.kill();
+    };
+  }, []);
+
+  return (
+    <section id="supercars" className="garage-section">
+      <div className="garage-header">
+        <div className="section-eyebrow">Curated Fleet</div>
+        <h2 className="section-title">The <em>Garage</em><br />Collection</h2>
+      </div>
+      <div className="cars-drag-hint">Drag to explore</div>
+      <div ref={containerRef} className="cars-scroll-container">
+        <div ref={trackRef} className="cars-track">
+          {CARS.map(c => <CarCard key={c.model} c={c} />)}
+        </div>
+      </div>
+    </section>
+  );
+}

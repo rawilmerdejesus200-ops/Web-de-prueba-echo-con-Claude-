@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ÉLITE ESTATES — Luxury Homes &amp; Supercars</title>
+  <meta name="description" content="Exclusive luxury real estate and supercars. Where architecture meets velocity." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React (UMD builds, no build step needed) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel Standalone: lets the browser transpile JSX directly -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Three.js for the 3D door + particle effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP + ScrollTrigger for scroll-driven camera/animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- App components, transpiled in-browser by Babel (type="text/babel") -->
+  <script type="text/babel" data-presets="react" src="components/CustomCursor.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/DoorIntro.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/Navbar.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/Hero.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/Marquee.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/MansionTour.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/PropertiesGrid.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/GarageScroller.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/CinematicShowcase.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/ContactFooter.jsx"></script>
+  <script type="text/babel" data-presets="react" src="components/App.jsx"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+// components/PropertiesGrid.jsx
+const PROPERTIES = [
+  {
+    name: 'Villa Pantheon', location: "Monaco, Côte d'Azur", price: '€ 48,500,000',
+    badge: 'Available', span: 'span-7', ratio: '16/10',
+    img: 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=1200&q=80',
+    features: [{ label: '8 Suites', icon: 'bed' }, { label: '1,840 m²', icon: 'area' }],
+  },
+  {
+    name: 'Maison Lumière', location: 'Bel Air, Los Angeles', price: '$ 32,000,000',
+    badge: 'Under Offer', span: 'span-5', ratio: '4/5',
+    img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+    features: [],
+  },
+  {
+    name: 'Casa Nero', location: 'Ibiza, Spain', price: '€ 19,750,000',
+    badge: 'New Listing', span: 'span-4', ratio: '4/5',
+    img: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80',
+    features: [],
+  },
+  {
+    name: 'The Meridian', location: 'Dubai Marina, UAE', price: 'AED 82,000,000',
+    badge: 'Available', span: 'span-8', ratio: '16/9',
+    img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&q=80',
+    features: [{ label: '12 Rooms', icon: 'bed' }, { label: '3,200 m²', icon: 'area' }],
+  },
+];
+
+function FeatureIcon({ type }) {
+  if (type === 'bed') {
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>;
+  }
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>;
+}
+
+function PropertyCard({ p, index }) {
+  const { useEffect, useRef, useState } = React;
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach(e => e.isIntersecting && setVisible(true)),
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`property-card ${p.span} reveal ${visible ? 'reveal-visible' : ''}`}
+      style={{ aspectRatio: p.ratio, transitionDelay: `${index * 0.12}s` }}
+    >
+      <img className="property-img" src={p.img} alt={p.name} loading="lazy" />
+      <div className="property-overlay" />
+      <div className="property-info">
+        <div className="property-badge">{p.badge}</div>
+        <div className="property-name">{p.name}</div>
+        <div className="property-location">{p.location}</div>
+        <div className="property-price">{p.price}</div>
+        {p.features.length > 0 && (
+          <div className="property-features">
+            {p.features.map((f, i) => (
+              <span key={i} className="property-feature"><FeatureIcon type={f.icon} />{f.label}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PropertiesGrid() {
+  return (
+    <section id="properties" className="properties-section">
+      <div className="section-header">
+        <div>
+          <div className="section-eyebrow">Featured Residences</div>
+          <h2 className="section-title">Curated<br /><em>Properties</em></h2>
+        </div>
+        <a href="#contact" className="section-link cursor-hover">
+          Full Portfolio
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7v10" /></svg>
+        </a>
+      </div>
+      <div className="property-grid">
+        {PROPERTIES.map((p, i) => <PropertyCard key={p.name} p={p} index={i} />)}
+      </div>
+    </section>
+  );
+}

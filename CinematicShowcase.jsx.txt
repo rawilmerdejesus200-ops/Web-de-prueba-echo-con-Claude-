@@ -1,0 +1,136 @@
+// components/CinematicShowcase.jsx
+function EmberParticles() {
+  const { useEffect, useRef } = React;
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+
+    function resize() {
+      w = canvas.width = canvas.parentElement.offsetWidth;
+      h = canvas.height = canvas.parentElement.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Particle {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h + h;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = -(Math.random() * 0.8 + 0.3);
+        this.r = Math.random() * 2 + 0.5;
+        this.life = 0;
+        this.maxLife = Math.random() * 200 + 100;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.life++;
+        if (this.life > this.maxLife || this.y < -20) this.reset();
+      }
+      draw() {
+        const alpha = Math.min(1, (this.maxLife - this.life) / 40) * 0.8;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201,168,76,${alpha})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 60; i++) {
+      const p = new Particle();
+      p.y = Math.random() * h;
+      particles.push(p);
+    }
+
+    let raf;
+    const sectionEl = canvas.closest('.showcase-section');
+    function loop() {
+      raf = requestAnimationFrame(loop);
+      if (sectionEl) {
+        const rect = sectionEl.getBoundingClientRect();
+        if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+      }
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => { p.update(); p.draw(); });
+    }
+    loop();
+
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+
+  return <canvas ref={canvasRef} className="ember-canvas" />;
+}
+
+function CinematicShowcase({ videoUrl }) {
+  const { useEffect, useRef, useState } = React;
+  const [modalOpen, setModalOpen] = useState(false);
+  const contentRef = useRef(null);
+  const modalVideoRef = useRef(null);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const tween = gsap.fromTo(contentRef.current, { y: 60 }, {
+      y: -60,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#showcase',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: true,
+      },
+    });
+    return () => { if (tween.scrollTrigger) tween.scrollTrigger.kill(); };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') closeModal(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  const openModal = () => {
+    setModalOpen(true);
+    setTimeout(() => modalVideoRef.current && modalVideoRef.current.play(), 50);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+    if (modalVideoRef.current) {
+      modalVideoRef.current.pause();
+      modalVideoRef.current.currentTime = 0;
+    }
+  };
+
+  return (
+    <section id="showcase" className="showcase-section">
+      <video className="showcase-video" autoPlay muted loop playsInline>
+        <source src={videoUrl} type="video/mp4" />
+      </video>
+      <div className="showcase-overlay" />
+      <EmberParticles />
+      <div ref={contentRef} className="showcase-content">
+        <div className="showcase-eyebrow">Private Cinema Experience</div>
+        <h2 className="showcase-title">Life as<br /><em>Art</em></h2>
+        <div className="gold-divider" />
+        <button className="play-btn cursor-hover" onClick={openModal}>
+          <span className="play-circle">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+          </span>
+          Watch the Experience
+        </button>
+      </div>
+
+      <div className={`video-modal ${modalOpen ? 'video-modal-open' : ''}`} onClick={(e) => e.target === e.currentTarget && closeModal()}>
+        <button className="modal-close cursor-hover" onClick={closeModal}>&#10005;</button>
+        <video ref={modalVideoRef} controls>
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      </div>
+    </section>
+  );
+}
